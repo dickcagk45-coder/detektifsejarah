@@ -179,7 +179,7 @@
             <div class="flex items-center gap-1 bg-yellow-500 text-yellow-900 px-3 py-1 rounded-full shadow-inner">
                 ⭐ <span id="hud-points">0</span> Poin
             </div>
-            <button onclick="toggleAudio()" id="btn-audio-hud" class="p-2 hover:bg-red-700 rounded-full transition" title="Suara">🔊</button>
+            <button onclick="toggleAudio()" id="btn-audio-hud" class="p-2 hover:bg-red-700 rounded-full transition" title="Suara Efek">🔊</button>
             <button onclick="showMenu()" class="p-2 hover:bg-red-700 rounded-full transition" title="Kembali ke Menu">🏠</button>
         </div>
     </header>
@@ -194,8 +194,8 @@
             
             <!-- Top HUD -->
             <div class="w-full flex justify-end gap-3 px-6 md:px-12 pt-4">
-                <button onclick="toggleAudio()" id="btn-audio-top" class="circle-btn-wood w-12 h-12 text-2xl shadow-lg" title="Suara">🔊</button>
-                <button onclick="alert('Fitur musik latar akan segera hadir pada update berikutnya!')" class="circle-btn-wood w-12 h-12 text-2xl shadow-lg" title="Musik">🎵</button>
+                <button onclick="toggleAudio()" id="btn-audio-top" class="circle-btn-wood w-12 h-12 text-2xl shadow-lg" title="Suara Efek">🔊</button>
+                <button onclick="toggleMusic()" id="btn-music-top" class="circle-btn-wood w-12 h-12 text-2xl shadow-lg" title="Musik Latar">🔕</button>
                 <button onclick="location.reload()" class="circle-btn-wood w-12 h-12 text-2xl shadow-lg" title="Home">🏠</button>
             </div>
 
@@ -587,6 +587,51 @@
         if (iconBottom) iconBottom.innerText = icon;
         
         if(soundEnabled) initAudio();
+    }
+
+    // --- BACKGROUND MUSIC SYSTEM ---
+    let isMusicPlaying = false;
+    let bgmInterval = null;
+    let noteIndex = 0;
+    // Nada misterius (A minor pentatonic)
+    const melody = [220.00, 329.63, 261.63, 329.63, 293.66, 329.63, 392.00, 329.63]; 
+
+    function toggleMusic() {
+        isMusicPlaying = !isMusicPlaying;
+        const btnMusic = document.getElementById('btn-music-top');
+        if (btnMusic) btnMusic.innerText = isMusicPlaying ? '🎵' : '🔕';
+        
+        if (isMusicPlaying) {
+            initAudio();
+            playNextNote();
+        } else {
+            clearTimeout(bgmInterval);
+        }
+    }
+
+    function playNextNote() {
+        if (!isMusicPlaying) return;
+        
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'triangle'; // Suara lembut seperti kotak musik
+        osc.frequency.value = melody[noteIndex];
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        // Pengaturan volume agar sangat pelan sebagai latar (max 0.03)
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.03, now + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        
+        osc.start(now);
+        osc.stop(now + 0.5);
+        
+        noteIndex = (noteIndex + 1) % melody.length;
+        bgmInterval = setTimeout(playNextNote, 500); // Tempo: mainkan setiap 500ms
     }
 
     // --- GAME DATA DARI FILE ASLI ---

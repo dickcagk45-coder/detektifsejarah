@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detektif Sejarah: Misteri Menuju Kemerdekaan Indonesia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #291000;
+            user-select: none;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2, h3, h4, .font-kids {
+            font-family: 'Baloo 2', cursive;
+        }
+
+        #game-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #1a0b02;
+            overflow: hidden;
+        }
+
+        /* --- STYLES FOR IMAGE BACKGROUND & HOTSPOTS --- */
+        #start-screen-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Memanggil gambar lokal yang akan di-upload ke GitHub */
+            background-image: url('bg-utama.png'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 10;
+        }
+
+        .hotspot-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20;
+            pointer-events: none; 
+        }
+
+        .hotspot {
+            position: absolute;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.2s;
+            border-radius: 50px;
+        }
+
+        /* Efek hover halus pada area tombol gambar asli */
+        .hotspot:hover {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            background: rgba(255,255,255,0.05);
+        }
+        .hotspot:active {
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.1);
+        }
+
+        /* Posisi Tombol Hotspot (Menyesuaikan dengan gambar referensi) */
+        .hs-start { bottom: 12%; left: 50%; transform: translateX(-50%); width: 35%; height: 10%; border-radius: 100px; }
+        .hs-how { bottom: 3%; left: 28%; width: 13%; height: 6%; }
+        .hs-badge { bottom: 3%; left: 45%; width: 13%; height: 6%; }
+        .hs-sound { bottom: 3%; left: 61%; width: 13%; height: 6%; }
+        .hs-notes { top: 40%; left: 5%; width: 10%; height: 5%; }
+        .hs-robot { top: 29%; right: 6%; width: 12%; height: 5%; }
+        .hs-top-audio { top: 3%; right: 17%; width: 4%; height: 7%; border-radius: 50%; }
+        .hs-top-music { top: 3%; right: 11%; width: 4%; height: 7%; border-radius: 50%; }
+        .hs-top-home { top: 3%; right: 5%; width: 4%; height: 7%; border-radius: 50%; }
+
+        /* --- GAME UI STYLES --- */
+        .wood-bg {
+            background-color: #5c3a21;
+            background-image: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%);
+        }
+        .museum-bg {
+            background: radial-gradient(circle at center, #8B4513 0%, #3e1f06 100%);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+        }
+        .parchment-bg {
+            background-color: #fef3c7;
+            box-shadow: inset 0 0 40px rgba(139,69,19,0.15), 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .object-hover {
+            transition: all 0.2s;
+            cursor: inherit; /* Inherits from dynamic style for selfie cursor */
+        }
+        .object-hover:hover {
+            transform: scale(1.15) rotate(5deg);
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+        }
+        .float-anim {
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #451a03; border-radius: 5px;}
+        ::-webkit-scrollbar-thumb { background: #b45309; border-radius: 5px; border: 2px solid #451a03; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    
+    <!-- HEADER / HUD -->
+    <header id="hud" class="hidden bg-red-600 text-white p-3 flex justify-between items-center shadow-md z-50 border-b-4 border-red-800">
+        <div class="flex items-center gap-4">
+            <div class="font-kids text-xl font-bold flex items-center gap-2">
+                🕵️ <span id="hud-name">Detektif</span>
+            </div>
+            <div class="bg-red-800 px-3 py-1 rounded-full text-sm font-bold shadow-inner">
+                Level: <span id="hud-level">1</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-4 font-kids text-xl font-bold">
+            <div class="flex items-center gap-1 bg-yellow-500 text-yellow-900 px-3 py-1 rounded-full shadow-inner">
+                ⭐ <span id="hud-points">0</span> Poin
+            </div>
+            <button onclick="toggleAudio()" id="btn-audio" class="p-2 hover:bg-red-700 rounded-full transition">🔊</button>
+            <button onclick="showMenu()" class="p-2 hover:bg-red-700 rounded-full transition" title="Kembali ke Menu">🏠</button>
+        </div>
+    </header>
+
+    <!-- SCREEN 1: SPLASH & START (Image Background + Hotspots) -->
+    <section id="screen-start" class="flex flex-1 relative min-h-screen">
+        <div id="start-screen-bg"></div>
+        <div class="hotspot-container">
+            <div class="hotspot hs-start" onclick="goToSelfieScreen()" title="Mulai Petualangan"></div>
+            <div class="hotspot hs-how" onclick="alert('Cara Bermain:\n1. Pilih ruangan di Peta.\n2. Cari petunjuk.\n3. Pecahkan teka-teki!')" title="Cara Bermain"></div>
+            <div class="hotspot hs-badge" onclick="renderBadges('badge-container'); document.getElementById('modal-badges').classList.remove('hidden');" title="Lihat Lencana"></div>
+            <div class="hotspot hs-sound" onclick="toggleAudio()" title="Atur Suara"></div>
+            <div class="hotspot hs-notes" onclick="alert('Catatan Detektif: Kumpulkan semua petunjuk untuk mengungkap misteri!')" title="Lihat Catatan"></div>
+            <div class="hotspot hs-robot" onclick="alert('Bung Robot: Halo Detektif! Aku siap membantumu kapan saja.')" title="Tanya Bung Robot"></div>
+            <div class="hotspot hs-top-audio" onclick="toggleAudio()" title="Suara On/Off"></div>
+            <div class="hotspot hs-top-music" onclick="alert('Musik dimatikan/dihidupkan.')" title="Musik On/Off"></div>
+            <div class="hotspot hs-top-home" onclick="location.reload()" title="Kembali ke Awal"></div>
+        </div>
+    </section>
+
+    <!-- SCREEN 2: SELFIE -->
+    <section id="screen-selfie" class="hidden flex-1 flex-col items-center justify-center wood-bg p-4 min-h-screen text-center">
+        <div class="bg-amber-100 border-8 border-amber-800 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+            <h2 class="font-kids text-3xl font-bold text-amber-950 mb-4">Kartu Identitas Detektif</h2>
+            <p class="font-bold text-amber-800 mb-6">Ambil foto atau unggah wajahmu untuk dijadikan kursor detektif!</p>
+            
+            <div class="flex flex-col gap-4">
+                <input type="text" id="player-name" placeholder="Siapa namamu, Detektif?" class="w-full px-4 py-3 rounded-xl border-4 border-amber-300 font-bold text-lg text-center outline-none focus:border-amber-500">
+                
+                <div class="relative w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-amber-500 bg-gray-200 flex items-center justify-center shadow-inner">
+                    <video id="webcam" autoplay playsinline class="hidden w-full h-full object-cover"></video>
+                    <img id="preview-img" class="hidden w-full h-full object-cover" />
+                    <span id="selfie-placeholder" class="text-6xl">🕵️</span>
+                </div>
+
+                <div class="flex gap-2 justify-center mt-2">
+                    <button onclick="startCamera()" id="btn-start-cam" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">📷 Buka Kamera</button>
+                    <button onclick="takeSelfie()" id="btn-take-pic" class="hidden bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">📸 Jepret</button>
+                </div>
+
+                <p class="text-xs text-gray-500 font-bold">- Atau -</p>
+                <input type="file" id="file-upload" accept="image/*" class="w-full text-sm font-bold text-amber-900 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-200 file:text-amber-900 hover:file:bg-amber-300" onchange="handleImageUpload(event)">
+                
+                <button onclick="startGame()" class="mt-4 bg-gradient-to-b from-red-500 to-red-700 text-white font-bold py-3 px-6 rounded-full text-xl shadow-lg hover:scale-105 transition border-4 border-white">
+                    Masuk ke Museum ➔
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SCREEN 3: MENU / PETA -->
+    <section id="screen-menu" class="hidden flex-1 flex-col items-center justify-center wood-bg p-6 min-h-screen relative">
+        <h2 class="font-kids text-4xl text-white font-black tracking-widest drop-shadow-lg mb-8">Peta Museum Sejarah</h2>
+        <div class="parchment-bg w-full max-w-4xl p-6 md:p-10 rounded-2xl border-[6px] border-amber-900 shadow-2xl relative">
+            <div id="level-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10"></div>
+        </div>
+    </section>
+
+    <!-- SCREEN 4: INTERACTIVE ROOM -->
+    <section id="screen-room" class="hidden flex-1 flex-col museum-bg relative min-h-screen">
+        <div class="text-center py-4 bg-black/50 text-white border-b-4 border-amber-900 absolute w-full top-0 z-10">
+            <h2 id="room-title" class="font-kids text-3xl font-bold">Nama Ruangan</h2>
+            <p id="room-desc" class="text-sm font-bold text-amber-200">Temukan 5 petunjuk untuk membuka teka-teki!</p>
+        </div>
+        
+        <div id="interactive-area" class="flex-1 relative w-full h-full min-h-[500px] overflow-hidden">
+            <!-- Benda-benda akan di-render di sini oleh JavaScript -->
+        </div>
+
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center z-10">
+            <div class="bg-amber-100 px-6 py-2 rounded-full border-4 border-amber-500 font-bold text-amber-900 mb-2 shadow-lg">
+                Petunjuk Ditemukan: <span id="clue-count">0</span> / 5
+            </div>
+            <button id="btn-quiz" onclick="startQuiz()" class="hidden bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 border-4 border-white rounded-full text-xl shadow-[0_5px_0_#14532d] active:translate-y-[5px] active:shadow-none transition-all animate-bounce">
+                🧩 Pecahkan Teka-Teki!
+            </button>
+        </div>
+    </section>
+
+    <!-- MODAL: KUIS (Ditampilkan di dalam SCREEN 4) -->
+    <div id="modal-quiz" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="parchment-bg max-w-lg w-full rounded-2xl p-6 border-4 border-amber-900 shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-kids text-2xl font-bold text-amber-950">Teka-Teki Sejarah</h3>
+                <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">Soal <span id="quiz-num">1</span>/3</span>
+            </div>
+            <p id="quiz-question" class="text-lg font-bold text-gray-800 mb-6 text-center"></p>
+            <div id="quiz-options" class="flex flex-col gap-3 flex-1 mb-4"></div>
+            <div class="flex justify-between mt-auto">
+                <button onclick="useHint()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md flex items-center gap-2">
+                    💡 Minta Petunjuk (-5 Poin)
+                </button>
+                <button onclick="document.getElementById('modal-quiz').classList.add('hidden')" class="text-amber-900 font-bold hover:underline">Tutup</button>
+            </div>
+            <p id="quiz-hint-text" class="text-sm font-bold text-blue-800 mt-3 hidden bg-blue-100 p-2 rounded"></p>
+        </div>
+    </div>
+
+    <!-- MODAL: FEEDBACK JAWABAN -->
+    <div id="modal-feedback" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="bg-white max-w-sm w-full rounded-2xl p-6 text-center border-4 border-amber-500 shadow-2xl">
+            <div id="feedback-icon" class="text-6xl mb-2">🎉</div>
+            <h3 id="feedback-title" class="font-kids text-3xl font-bold text-amber-900 mb-2">Hebat!</h3>
+            <p id="feedback-desc" class="text-gray-700 font-bold mb-4"></p>
+            <div id="feedback-points" class="font-kids text-xl text-green-600 font-bold mb-6">+20 Poin</div>
+            <button onclick="nextQuizStep()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-8 rounded-full shadow-md w-full">Lanjut</button>
+        </div>
+    </div>
+
+    <!-- MODAL: LEVEL COMPLETE -->
+    <div id="modal-level-complete" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="parchment-bg max-w-md w-full rounded-2xl p-8 text-center border-4 border-amber-900 shadow-2xl">
+            <div class="text-6xl mb-4 animate-bounce">🏆</div>
+            <h3 class="font-kids text-3xl font-bold text-amber-950 mb-2">Level Selesai!</h3>
+            <p class="text-amber-800 font-bold mb-4">Kamu berhasil menyelesaikan ruangan ini!</p>
+            <div class="bg-amber-200 text-amber-900 font-bold text-xl py-2 rounded-lg mb-6 border-2 border-amber-400">
+                Bonus: +50 Poin
+            </div>
+            <button onclick="showMenu()" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-full shadow-md w-full text-xl border-2 border-white">
+                Kembali ke Peta Museum
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: BADGES -->
+    <div id="modal-badges" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="parchment-bg max-w-3xl w-full rounded-2xl p-8 border-4 border-amber-900 shadow-2xl relative max-h-[80vh] overflow-y-auto">
+            <button onclick="document.getElementById('modal-badges').classList.add('hidden')" class="absolute top-4 right-4 text-3xl text-amber-900 hover:text-red-600 font-bold">&times;</button>
+            <h3 class="font-kids text-4xl font-bold text-amber-950 mb-6 text-center border-b-4 border-amber-400 pb-2">Koleksi Lencana</h3>
+            <div id="badge-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6"></div>
+        </div>
+    </div>
+
+    <!-- SCREEN 5: FINAL COMPLETE -->
+    <section id="screen-final" class="hidden flex-1 flex-col items-center justify-center museum-bg p-4 min-h-screen text-center relative">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="parchment-bg border-8 border-amber-900 rounded-3xl p-8 md:p-12 max-w-3xl w-full shadow-[0_0_100px_rgba(255,215,0,0.5)] relative z-10">
+            <h1 class="font-kids text-5xl md:text-6xl font-black text-red-700 mb-2 tracking-widest">🇮🇩 MISI BERHASIL! 🇮🇩</h1>
+            <p class="font-bold text-lg md:text-xl text-amber-950 mb-8 border-b-2 border-amber-400 pb-6">Kamu berhasil mengungkap rangkaian peristiwa menuju Kemerdekaan Indonesia!</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white/50 p-4 rounded-xl border-2 border-amber-700 shadow-sm">
+                    <div class="text-xs font-bold text-gray-600">Total Poin</div>
+                    <div id="final-points" class="font-kids text-3xl text-amber-900">0</div>
+                </div>
+                <div class="bg-white/50 p-4 rounded-xl border-2 border-amber-700 shadow-sm">
+                    <div class="text-xs font-bold text-gray-600">Petunjuk</div>
+                    <div id="final-clues" class="font-kids text-3xl text-amber-900">0</div>
+                </div>
+                <div class="bg-white/50 p-4 rounded-xl border-2 border-amber-700 shadow-sm">
+                    <div class="text-xs font-bold text-gray-600">Teka-teki</div>
+                    <div class="font-kids text-3xl text-amber-900">18</div>
+                </div>
+                <div class="bg-white/50 p-4 rounded-xl border-2 border-amber-700 shadow-sm">
+                    <div class="text-xs font-bold text-gray-600">Keberhasilan</div>
+                    <div class="font-kids text-3xl text-green-700">100%</div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="font-bold text-amber-900 mb-2">Apa yang kamu pelajari dari perjuangan para tokoh kemerdekaan?</h3>
+                <textarea class="w-full bg-white/80 border-2 border-amber-500 rounded-xl p-4 font-bold text-gray-700 outline-none" rows="3" placeholder="Tuliskan refleksimu di sini..."></textarea>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="renderBadges('badge-container'); document.getElementById('modal-badges').classList.remove('hidden');" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-8 rounded-full border-2 border-white shadow-lg">Lihat Lencana Akhir</button>
+                <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full border-2 border-white shadow-lg">Mulai Ulang Game</button>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // --- AUDIO SYSTEM (Web Audio API internal) ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    let soundEnabled = true;
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playSound(type) {
+        if (!soundEnabled) return;
+        initAudio();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        if (type === 'click' || type === 'clue') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+            gainNode.gain.setValueAtTime(0.1, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'correct') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.setValueAtTime(660, now + 0.1);
+            gainNode.gain.setValueAtTime(0.2, now);
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+            gainNode.gain.setValueAtTime(0.2, now);
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'win') {
+            osc.type = 'sine';
+            [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                osc.frequency.setValueAtTime(freq, now + (i*0.15));
+            });
+            gainNode.gain.setValueAtTime(0.3, now);
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.8);
+            osc.start(now); osc.stop(now + 0.8);
+        }
+    }
+
+    function toggleAudio() {
+        soundEnabled = !soundEnabled;
+        const icon = soundEnabled ? '🔊' : '🔇';
+        document.getElementById('btn-audio').innerText = icon;
+        if(soundEnabled) initAudio();
+    }
+
+    // --- GAME DATA ---
+    const allBadges = [
+        { id: 'b1', icon: '🕵️', title: 'Detektif Pemula', desc: 'Selesaikan level pertama', unlocked: false },
+        { id: 'b2', icon: '🔎', title: 'Pemburu Petunjuk', desc: 'Temukan 15 petunjuk', unlocked: false },
+        { id: 'b3', icon: '📜', title: 'Penjaga Sejarah', desc: 'Selesaikan level Proklamasi', unlocked: false },
+        { id: 'b4', icon: '⭐', title: 'Detektif Hebat', desc: 'Selesaikan 4 Ruangan', unlocked: false },
+        { id: 'b5', icon: '🇮🇩', title: 'Pahlawan Pengetahuan', desc: 'Selesaikan seluruh game', unlocked: false }
+    ];
+
+    const levels = [
+        { 
+            id: 1, title: 'Ruang Perjuangan', desc: 'Siswa menemukan petunjuk tentang perjuangan melawan penjajahan.', 
+            objects: ['🗺️','🖼️','🏺','🇮🇩','⚔️','📜','🛡️','🪖'],
+            questions: [
+                { q: "Siapakah pahlawan wanita dari Aceh yang gigih melawan Belanda?", opts: ["Cut Nyak Dien", "RA Kartini", "Dewi Sartika"], ans: 0, hint: "Beliau sangat ditakuti Belanda di daerah Aceh.", reason: "Cut Nyak Dien memimpin pasukan Aceh bergerilya melawan Belanda." },
+                { q: "Perang Diponegoro terjadi di pulau mana?", opts: ["Sumatera", "Jawa", "Sulawesi"], ans: 1, hint: "Pulau ini adalah pulau terpadat di Indonesia.", reason: "Pangeran Diponegoro memimpin perlawanan besar di tanah Jawa (1825-1830)." },
+                { q: "Apa tujuan utama bangsa asing menjajah Indonesia?", opts: ["Mencari rempah-rempah", "Berlibur", "Membangun sekolah"], ans: 0, hint: "Benda ini sangat mahal di Eropa untuk bumbu masakan.", reason: "Kekayaan rempah-rempah Nusantara menarik bangsa Eropa untuk memonopoli perdagangan." }
+            ]
+        },
+        { 
+            id: 2, title: 'Ruang Menjelang Proklamasi', desc: 'Menyelidiki peristiwa penting menjelang kemerdekaan.', 
+            objects: ['📅','📻','📰','🗞️','🗺️','🗄️','📝','📸'],
+            questions: [
+                { q: "Berita kekalahan Jepang pertama kali didengar oleh?", opts: ["Soekarno", "Sutan Sjahrir", "Mohammad Hatta"], ans: 1, hint: "Beliau mendengar dari siaran radio gelap.", reason: "Sutan Sjahrir mendengar berita menyerahnya Jepang dari radio BBC." },
+                { q: "Kota di Jepang yang dijatuhi bom atom adalah Hiroshima dan...", opts: ["Tokyo", "Nagasaki", "Kyoto"], ans: 1, hint: "Berawalan huruf N.", reason: "Pengeboman Hiroshima (6 Ags) dan Nagasaki (9 Ags) membuat Jepang menyerah." },
+                { q: "Siapa yang mendesak Soekarno untuk segera memproklamasikan kemerdekaan?", opts: ["Golongan Tua", "Golongan Muda", "Jepang"], ans: 1, hint: "Kelompok pemuda yang bersemangat.", reason: "Golongan muda tidak ingin kemerdekaan dianggap sebagai hadiah dari Jepang." }
+            ]
+        },
+        { 
+            id: 3, title: 'Ruang Rengasdengklok', desc: 'Memecahkan misteri penculikan Soekarno-Hatta.', 
+            objects: ['📍','🚗','🏠','👥','📝','🕰️','🔦','📜'],
+            questions: [
+                { q: "Mengapa Soekarno dan Hatta dibawa ke Rengasdengklok?", opts: ["Untuk liburan", "Agar tidak terpengaruh Jepang", "Untuk menyusun teks"], ans: 1, hint: "Tujuannya untuk menjauhkan mereka dari campur tangan asing.", reason: "Pemuda mengamankan Soekarno-Hatta agar segera memproklamasikan kemerdekaan tanpa pengaruh Jepang." },
+                { q: "Rengasdengklok berada di daerah mana?", opts: ["Karawang", "Bandung", "Bogor"], ans: 0, hint: "Terletak di sebelah timur Jakarta, terkenal sebagai lumbung padi.", reason: "Rengasdengklok adalah sebuah kecamatan di Kabupaten Karawang." },
+                { q: "Siapa tokoh yang menjemput Soekarno-Hatta kembali ke Jakarta?", opts: ["Ahmad Soebardjo", "Sayuti Melik", "Wikana"], ans: 0, hint: "Beliau meyakinkan para pemuda bahwa Proklamasi akan dilaksanakan esok hari.", reason: "Ahmad Soebardjo memberikan jaminan nyawa agar Soekarno-Hatta bisa kembali ke Jakarta." }
+            ]
+        },
+        { 
+            id: 4, title: 'Ruang Tokoh Proklamasi', desc: 'Mengenali pahlawan di balik layar.', 
+            objects: ['👤','📛','📜','✒️','📸','👔','👓','💼'],
+            questions: [
+                { q: "Siapa penjahit Bendera Pusaka Merah Putih?", opts: ["Ibu Fatmawati", "RA Kartini", "Cut Meutia"], ans: 0, hint: "Beliau adalah istri dari Ir. Soekarno.", reason: "Ibu Fatmawati menjahit bendera pusaka yang dikibarkan saat proklamasi." },
+                { q: "Siapakah yang mengetik naskah proklamasi?", opts: ["Sayuti Melik", "Sukarni", "B.M. Diah"], ans: 0, hint: "Beliau mengetiknya dengan mesin ketik pinjaman.", reason: "Sayuti Melik mengetik naskah proklamasi setelah dirumuskan tulisan tangan." },
+                { q: "Siapa yang mengusulkan agar naskah proklamasi ditandatangani Soekarno-Hatta?", opts: ["Sukarni", "Sayuti Melik", "Chairul Saleh"], ans: 0, hint: "Tokoh pemuda ini menyarankan tanda tangan 'Atas nama bangsa Indonesia'.", reason: "Sukarni mengusulkan agar Soekarno dan Hatta saja yang menandatangani naskah tersebut." }
+            ]
+        },
+        { 
+            id: 5, title: 'Ruang Teks Proklamasi', desc: 'Menyelidiki perumusan naskah sakti.', 
+            objects: ['⌨️','📝','🖊️','💡','☕','📜','📋','🕰️'],
+            questions: [
+                { q: "Di rumah siapakah naskah proklamasi dirumuskan?", opts: ["Laksamana Maeda", "Ir. Soekarno", "Bung Hatta"], ans: 0, hint: "Beliau adalah perwira tinggi Angkatan Laut Jepang yang bersimpati pada Indonesia.", reason: "Rumah Laksamana Maeda dianggap aman dari intervensi tentara militer Jepang (Rikugun)." },
+                { q: "Kata 'tempoh' pada naskah proklamasi ketikan diubah menjadi...", opts: ["Tempo", "Waktu", "Saat"], ans: 0, hint: "Menghilangkan huruf 'h' di belakang.", reason: "Sayuti Melik melakukan beberapa perubahan ejaan, termasuk 'tempoh' menjadi 'tempo'." },
+                { q: "Kalimat pertama proklamasi merupakan gagasan dari?", opts: ["Ahmad Soebardjo", "Ir. Soekarno", "Moh. Hatta"], ans: 0, hint: "Tokoh yang menjemput Soekarno di Rengasdengklok.", reason: "Ahmad Soebardjo menyumbangkan kalimat pertama yang berbunyi 'Kami bangsa Indonesia dengan ini menyatakan Kemerdekaan Indonesia'." }
+            ]
+        },
+        { 
+            id: 6, title: 'Ruang Pembacaan', desc: 'Mengungkap fakta 17 Agustus 1945.', 
+            objects: ['🇮🇩','🏠','👥','🎤','📜','📸','📅','📻'],
+            questions: [
+                { q: "Tanggal berapakah Proklamasi dibacakan?", opts: ["17 Agustus 1945", "18 Agustus 1945", "16 Agustus 1945"], ans: 0, hint: "Bulan kedelapan tahun 1945.", reason: "Proklamasi dibacakan pada hari Jumat, 17 Agustus 1945 pukul 10.00 WIB." },
+                { q: "Di manakah lokasi pembacaan teks Proklamasi?", opts: ["Jalan Pegangsaan Timur No. 56", "Istana Negara", "Lapangan Ikada"], ans: 0, hint: "Itu adalah alamat rumah Ir. Soekarno.", reason: "Pembacaan dilakukan di halaman rumah Soekarno di Jl. Pegangsaan Timur 56 (kini Tugu Proklamasi)." },
+                { q: "Lagu apa yang dinyanyikan setelah bendera dikibarkan?", opts: ["Indonesia Raya", "Bagimu Negeri", "Hari Merdeka"], ans: 0, hint: "Lagu kebangsaan kita.", reason: "Hadirin secara spontan menyanyikan lagu Indonesia Raya ciptaan W.R. Supratman saat bendera naik." }
+            ]
+        }
+    ];
+
+    // --- STATE MANAGEMENT ---
+    let gameState = {
+        name: 'Detektif',
+        points: 0,
+        unlockedLevel: 1,
+        totalCluesFound: 0,
+        badges: allBadges,
+        avatar: null
+    };
+
+    let currentLevel = null;
+    let roomClues = 0;
+    let activeQuizIndex = 0;
+    let quizData = [];
+
+    // Load dari localStorage jika ada
+    const savedState = localStorage.getItem('detektifHistoryState');
+    if (savedState) {
+        try {
+            gameState = JSON.parse(savedState);
+        } catch (e) { console.error("Error load data", e); }
+    }
+
+    function saveGame() {
+        localStorage.setItem('detektifHistoryState', JSON.stringify(gameState));
+        updateHUD();
+    }
+
+    function updateHUD() {
+        document.getElementById('hud-name').innerText = gameState.name;
+        document.getElementById('hud-level').innerText = Math.min(gameState.unlockedLevel, 6);
+        document.getElementById('hud-points').innerText = gameState.points;
+    }
+
+    function checkBadges() {
+        if (gameState.unlockedLevel > 1) gameState.badges[0].unlocked = true;
+        if (gameState.totalCluesFound >= 15) gameState.badges[1].unlocked = true;
+        if (gameState.unlockedLevel > 6) gameState.badges[2].unlocked = true;
+        if (gameState.unlockedLevel > 4) gameState.badges[3].unlocked = true;
+        if (gameState.unlockedLevel > 6) gameState.badges[4].unlocked = true;
+        saveGame();
+    }
+
+    function applyCursor() {
+        if (gameState.avatar) {
+            let styleId = 'custom-cursor-style';
+            let styleEl = document.getElementById(styleId);
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = styleId;
+                document.head.appendChild(styleEl);
+            }
+            // Force cursor with !important to override tailwind utilities
+            styleEl.innerHTML = `* { cursor: url('${gameState.avatar}') 16 16, auto !important; }`;
+        }
+    }
+
+    // --- NAVIGATION ---
+    function hideAllScreens() {
+        ['screen-start', 'screen-selfie', 'screen-menu', 'screen-room', 'screen-final'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+    }
+
+    function goToSelfieScreen() {
+        hideAllScreens();
+        document.getElementById('screen-selfie').classList.remove('hidden');
+        playSound('click');
+        applyCursor();
+    }
+
+    function showMenu() {
+        hideAllScreens();
+        document.getElementById('hud').classList.remove('hidden');
+        document.getElementById('screen-menu').classList.remove('hidden');
+        updateHUD();
+        renderMap();
+        applyCursor();
+        checkBadges();
+    }
+
+    // --- CAMERA & SELFIE ---
+    let videoStream;
+    function startCamera() {
+        const video = document.getElementById('webcam');
+        const img = document.getElementById('preview-img');
+        const placeholder = document.getElementById('selfie-placeholder');
+        
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                videoStream = stream;
+                video.srcObject = stream;
+                video.classList.remove('hidden');
+                img.classList.add('hidden');
+                placeholder.classList.add('hidden');
+                document.getElementById('btn-start-cam').classList.add('hidden');
+                document.getElementById('btn-take-pic').classList.remove('hidden');
+            })
+            .catch(err => {
+                alert("Kamera tidak ditemukan atau akses ditolak. Gunakan tombol 'Pilih File'.");
+            });
+    }
+
+    function takeSelfie() {
+        const video = document.getElementById('webcam');
+        const canvas = document.createElement('canvas');
+        canvas.width = 120; canvas.height = 120;
+        const ctx = canvas.getContext('2d');
+        
+        // Buat potongan melingkar (crop circle)
+        ctx.beginPath();
+        ctx.arc(60, 60, 60, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        
+        // Draw video feed onto canvas
+        const size = Math.min(video.videoWidth, video.videoHeight);
+        const startX = (video.videoWidth - size) / 2;
+        const startY = (video.videoHeight - size) / 2;
+        ctx.drawImage(video, startX, startY, size, size, 0, 0, 120, 120);
+
+        gameState.avatar = canvas.toDataURL('image/png');
+        
+        // Stop stream
+        if(videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
+
+        video.classList.add('hidden');
+        const img = document.getElementById('preview-img');
+        img.src = gameState.avatar;
+        img.classList.remove('hidden');
+        
+        document.getElementById('btn-take-pic').classList.add('hidden');
+        document.getElementById('btn-start-cam').classList.remove('hidden');
+        document.getElementById('btn-start-cam').innerText = "📷 Ulangi";
+    }
+
+    function handleImageUpload(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imgObj = new Image();
+                imgObj.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 120; canvas.height = 120;
+                    const ctx = canvas.getContext('2d');
+                    ctx.beginPath(); ctx.arc(60, 60, 60, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+                    const size = Math.min(imgObj.width, imgObj.height);
+                    const startX = (imgObj.width - size) / 2;
+                    const startY = (imgObj.height - size) / 2;
+                    ctx.drawImage(imgObj, startX, startY, size, size, 0, 0, 120, 120);
+                    
+                    gameState.avatar = canvas.toDataURL('image/png');
+                    
+                    document.getElementById('webcam').classList.add('hidden');
+                    document.getElementById('selfie-placeholder').classList.add('hidden');
+                    const img = document.getElementById('preview-img');
+                    img.src = gameState.avatar;
+                    img.classList.remove('hidden');
+                };
+                imgObj.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function startGame() {
+        const nameInput = document.getElementById('player-name').value.trim();
+        if (nameInput) gameState.name = nameInput;
+        playSound('click');
+        saveGame();
+        showMenu();
+    }
+
+    // --- MAP MENU ---
+    function renderMap() {
+        const grid = document.getElementById('level-grid');
+        grid.innerHTML = '';
+        
+        levels.forEach((lvl, index) => {
+            const isUnlocked = gameState.unlockedLevel > index;
+            const isDone = gameState.unlockedLevel > index + 1;
+            
+            const card = document.createElement('div');
+            card.className = `p-5 rounded-xl border-4 ${isUnlocked ? 'bg-amber-100 border-amber-500 cursor-pointer hover:bg-amber-50 transform hover:-translate-y-1 transition' : 'bg-gray-300 border-gray-500 opacity-70'} shadow-md relative`;
+            
+            if (isUnlocked) card.onclick = () => loadRoom(lvl.id);
+            
+            card.innerHTML = `
+                <div class="absolute -top-4 -left-4 bg-${isUnlocked ? 'green' : 'gray'}-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl border-2 border-white shadow-sm">${lvl.id}</div>
+                ${!isUnlocked ? `<div class="absolute top-2 right-2 text-3xl">🔒</div>` : ''}
+                ${isDone ? `<div class="absolute top-2 right-2 text-3xl text-green-500 filter drop-shadow-md">✅</div>` : ''}
+                <h3 class="font-kids text-xl font-bold text-amber-950 mt-4 mb-2">${lvl.title}</h3>
+                <p class="text-xs font-bold text-amber-800">${isUnlocked ? lvl.desc : 'Level Terkunci'}</p>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function renderBadges(containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        gameState.badges.forEach(b => {
+            container.innerHTML += `
+                <div class="flex flex-col items-center p-3 rounded-lg border-2 ${b.unlocked ? 'bg-amber-100 border-amber-400' : 'bg-gray-200 border-gray-300 opacity-50 filter grayscale'}">
+                    <div class="text-4xl mb-2 drop-shadow-md">${b.icon}</div>
+                    <div class="font-bold text-center text-sm ${b.unlocked ? 'text-amber-900' : 'text-gray-600'}">${b.title}</div>
+                </div>
+            `;
+        });
+    }
+
+    // --- INTERACTIVE ROOM ---
+    function loadRoom(id) {
+        currentLevel = levels.find(l => l.id === id);
+        roomClues = 0;
+        quizData = [...currentLevel.questions];
+        activeQuizIndex = 0;
+        
+        document.getElementById('room-title').innerText = currentLevel.title;
+        document.getElementById('clue-count').innerText = '0';
+        document.getElementById('btn-quiz').classList.add('hidden');
+        
+        const area = document.getElementById('interactive-area');
+        area.innerHTML = '';
+        
+        currentLevel.objects.forEach((obj, i) => {
+            const isClue = i < 5; // 5 benda pertama adalah petunjuk, sisanya pengalih
+            
+            // Container mutlak untuk posisi agar transform hover tidak berkonflik
+            const wrapper = document.createElement('div');
+            wrapper.className = `absolute z-20`;
+            // Random posisi dalam batas aman
+            wrapper.style.left = `${Math.floor(Math.random() * 80) + 10}%`;
+            wrapper.style.top = `${Math.floor(Math.random() * 60) + 20}%`;
+            
+            // Elemen animasi visual
+            const el = document.createElement('div');
+            el.className = 'text-6xl object-hover float-anim filter drop-shadow-lg';
+            el.innerHTML = obj;
+            el.dataset.found = "false";
+            
+            el.onclick = function() {
+                if(this.dataset.found === "true") return;
+                this.dataset.found = "true";
+                
+                // Efek visual klik
+                this.classList.remove('float-anim');
+                this.classList.add('scale-125', 'opacity-50');
+                
+                if (isClue) {
+                    playSound('clue');
+                    roomClues++;
+                    gameState.totalCluesFound++;
+                    gameState.points += 10;
+                    document.getElementById('clue-count').innerText = roomClues;
+                    
+                    // Notif pop-up kecil di kursor
+                    const notif = document.createElement('div');
+                    notif.className = 'absolute text-green-400 font-bold text-xl clue-found-anim drop-shadow-md z-50 pointer-events-none';
+                    notif.innerText = '+10 Poin';
+                    notif.style.left = `${parseInt(wrapper.style.left) + 2}%`;
+                    notif.style.top = `${parseInt(wrapper.style.top) - 5}%`;
+                    area.appendChild(notif);
+                    setTimeout(() => notif.remove(), 1000);
+
+                    if (roomClues === 5) {
+                        document.getElementById('btn-quiz').classList.remove('hidden');
+                    }
+                } else {
+                    playSound('click');
+                }
+                saveGame();
+            };
+            
+            wrapper.appendChild(el);
+            area.appendChild(wrapper);
+        });
+
+        hideAllScreens();
+        document.getElementById('screen-room').classList.remove('hidden');
+        playSound('click');
+    }
+
+    // --- QUIZ SYSTEM ---
+    function startQuiz() {
+        playSound('click');
+        activeQuizIndex = 0;
+        showQuizModal();
+    }
+
+    function showQuizModal() {
+        const qData = quizData[activeQuizIndex];
+        document.getElementById('quiz-num').innerText = activeQuizIndex + 1;
+        document.getElementById('quiz-question').innerText = qData.q;
+        
+        const optsContainer = document.getElementById('quiz-options');
+        optsContainer.innerHTML = '';
+        document.getElementById('quiz-hint-text').classList.add('hidden');
+        
+        qData.opts.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 font-bold py-3 px-4 rounded-lg text-left transition';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(idx);
+            optsContainer.appendChild(btn);
+        });
+
+        document.getElementById('modal-quiz').classList.remove('hidden');
+    }
+
+    function useHint() {
+        if (gameState.points >= 5) {
+            gameState.points -= 5;
+            document.getElementById('quiz-hint-text').innerText = "Petunjuk: " + quizData[activeQuizIndex].hint;
+            document.getElementById('quiz-hint-text').classList.remove('hidden');
+            saveGame();
+            playSound('click');
+        } else {
+            alert("Poin tidak cukup untuk meminta petunjuk!");
+        }
+    }
+
+    function checkAnswer(selectedIdx) {
+        document.getElementById('modal-quiz').classList.add('hidden');
+        const qData = quizData[activeQuizIndex];
+        
+        if (selectedIdx === qData.ans) {
+            // Benar
+            playSound('correct');
+            gameState.points += 20;
+            document.getElementById('feedback-icon').innerText = '🎉';
+            document.getElementById('feedback-title').innerText = 'Hebat! Jawaban Benar';
+            document.getElementById('feedback-points').innerText = '+20 Poin';
+        } else {
+            // Salah (Tetap bisa lanjut, game ramah anak)
+            playSound('wrong');
+            document.getElementById('feedback-icon').innerText = '💡';
+            document.getElementById('feedback-title').innerText = 'Kurang Tepat';
+            document.getElementById('feedback-points').innerText = 'Tetap semangat!';
+        }
+        
+        document.getElementById('feedback-desc').innerText = qData.reason;
+        document.getElementById('modal-feedback').classList.remove('hidden');
+        saveGame();
+    }
+
+    function nextQuizStep() {
+        playSound('click');
+        document.getElementById('modal-feedback').classList.add('hidden');
+        activeQuizIndex++;
+        
+        if (activeQuizIndex < quizData.length) {
+            showQuizModal();
+        } else {
+            // Level Selesai
+            playSound('win');
+            gameState.points += 50;
+            if (gameState.unlockedLevel === currentLevel.id) {
+                gameState.unlockedLevel++;
+            }
+            saveGame();
+            checkBadges();
+            
+            if (currentLevel.id === 6) {
+                showFinalScreen();
+            } else {
+                document.getElementById('modal-level-complete').classList.remove('hidden');
+            }
+        }
+    }
+
+    function showFinalScreen() {
+        hideAllScreens();
+        document.getElementById('hud').classList.add('hidden');
+        document.getElementById('screen-final').classList.remove('hidden');
+        document.getElementById('final-points').innerText = gameState.points;
+        document.getElementById('final-clues').innerText = gameState.totalCluesFound;
+    }
+</script>
+</body>
+</html>

@@ -29,7 +29,7 @@
             height: 100%;
             background-image: url('bg-utama.png'); 
             background-size: cover;
-            background-position: top center;
+            background-position: top center; /* Memastikan bagian atas (logo) tidak terpotong */
             background-repeat: no-repeat;
             z-index: 10;
         }
@@ -152,7 +152,7 @@
         }
 
         #game-container {
-            width: 100%;
+            width: 100%; /* Membuat game full-screen */
             margin: 0 auto;
             position: relative;
             min-height: 100vh;
@@ -230,7 +230,7 @@
     <!-- SCREEN 2: SELFIE / PROFILE -->
     <section id="screen-selfie" class="hidden flex-1 flex flex-col items-center justify-center p-6 text-center bg-red-50">
         <h2 class="font-kids text-4xl text-red-600 font-bold mb-6">Persiapan Detektif!</h2>
-        <div class="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full border-4 border-yellow-400">
+        <div class="bg-white mx-auto p-8 rounded-2xl shadow-lg max-w-md w-full border-4 border-yellow-400">
             <p class="mb-6 text-lg font-bold text-gray-700">Sebelum masuk ke museum, buat tanda pengenalmu! Gunakan kamera untuk mengambil swafoto wajahmu yang akan menjadi kursor ajaib.</p>
             
             <div class="mb-6 flex flex-col items-center justify-center min-h-[160px]">
@@ -576,7 +576,6 @@
         soundEnabled = !soundEnabled;
         const icon = soundEnabled ? '🔊' : '🔇';
         
-        // Update all audio buttons across the app
         const btnHud = document.getElementById('btn-audio-hud');
         if (btnHud) btnHud.innerText = icon;
         
@@ -593,7 +592,6 @@
     let isMusicPlaying = false;
     let bgmInterval = null;
     let noteIndex = 0;
-    // Nada misterius (A minor pentatonic)
     const melody = [220.00, 329.63, 261.63, 329.63, 293.66, 329.63, 392.00, 329.63]; 
 
     function toggleMusic() {
@@ -616,13 +614,12 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         
-        osc.type = 'triangle'; // Suara lembut seperti kotak musik
+        osc.type = 'triangle'; 
         osc.frequency.value = melody[noteIndex];
         
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         
-        // Pengaturan volume agar sangat pelan sebagai latar (max 0.03)
         gain.gain.setValueAtTime(0, now);
         gain.gain.linearRampToValueAtTime(0.03, now + 0.1);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
@@ -631,7 +628,7 @@
         osc.stop(now + 0.5);
         
         noteIndex = (noteIndex + 1) % melody.length;
-        bgmInterval = setTimeout(playNextNote, 500); // Tempo: mainkan setiap 500ms
+        bgmInterval = setTimeout(playNextNote, 500);
     }
 
     // --- GAME DATA DARI FILE ASLI ---
@@ -645,7 +642,7 @@
 
     const levelsData = [
         {
-            id: 1, title: "Level 1: Ruang Perjuangan", desc: "Temukan petunjuk tentang perjuangan bangsa melawan penjajahan.", bg: "radial-gradient(circle, #78350f, #451a03)",
+            id: 1, title: "Level 1: Ruang Perjuangan", desc: "Temukan petunjuk tentang perjuangan bangsa melawan penjajahan.", bg: "url('bg-level1.png') center/cover no-repeat",
             objects: [
                 { id: 'l1o1', type: 'clue', icon: '🗺️', name: 'Peta Nusantara', text: 'Peta ini menunjukkan bahwa bangsa Eropa seperti Belanda, Portugis, dan Spanyol datang ke Nusantara awalnya untuk mencari rempah-rempah.', x: 20, y: 30 },
                 { id: 'l1o2', type: 'clue', icon: '🎍', name: 'Bambu Runcing', text: 'Senjata tradisional yang terbuat dari bambu. Walaupun sederhana, senjata ini adalah simbol keberanian rakyat Indonesia melawan senjata modern penjajah.', x: 70, y: 60 },
@@ -946,13 +943,21 @@
             if (isUnlocked) btn.onclick = () => loadLevel(lvl.id);
             const shortTitle = lvl.title.split(': ')[1] || lvl.title;
 
+            // Thumbnail display
+            let thumbnailBg = '';
+            if (lvl.bg.includes('url')) {
+                thumbnailBg = lvl.bg; // If it's an image
+            } else {
+                thumbnailBg = `background: ${lvl.bg}`; // If it's a gradient
+            }
+
             btn.innerHTML = `
                 <div class="flex items-center gap-3 p-3 border-b-2 border-gray-100 bg-white/50 rounded-t-xl relative z-10">
                     <div class="w-8 h-8 rounded-full ${isCompleted ? 'bg-green-600' : (isUnlocked ? 'bg-amber-600' : 'bg-gray-500')} text-white flex items-center justify-center font-bold font-kids shadow-inner text-lg">${lvl.id}</div>
                     <h4 class="font-kids text-lg font-bold leading-tight ${isUnlocked ? 'text-gray-800' : 'text-gray-500'} flex-1">${shortTitle}</h4>
                 </div>
                 <div class="h-28 w-full relative overflow-hidden border-y-2 border-gray-200 ${opacityStyle}">
-                    <div class="absolute inset-0 opacity-80" style="background: ${lvl.bg}"></div>
+                    <div class="absolute inset-0 opacity-80" style="${thumbnailBg}"></div>
                     <div class="absolute inset-0 flex items-center justify-center text-5xl drop-shadow-lg filter pb-2">${roomEmojis[index]}</div>
                 </div>
                 <div class="p-4 flex-1 relative z-10">

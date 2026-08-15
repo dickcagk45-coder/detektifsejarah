@@ -29,7 +29,7 @@
             height: 100%;
             background-image: url('bg-utama.png'); 
             background-size: cover;
-            background-position: top center; /* Memastikan bagian atas (logo) tidak terpotong */
+            background-position: top center;
             background-repeat: no-repeat;
             z-index: 10;
         }
@@ -110,49 +110,12 @@
                 0 10px 25px rgba(0,0,0,0.5);
         }
 
-        .ribbon-banner {
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 40;
-        }
-
-        .ribbon-banner::before, .ribbon-banner::after {
-            content: '';
-            position: absolute;
-            top: 20px;
-            z-index: -1;
-            border: 20px solid #991b1b;
-        }
-        .ribbon-banner::before {
-            left: -30px;
-            border-left-color: transparent;
-        }
-        .ribbon-banner::after {
-            right: -30px;
-            border-right-color: transparent;
-        }
-
-        .dashed-path {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 4px; }
-        
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.5);
-        }
 
         #game-container {
-            width: 100%; /* Membuat game full-screen */
+            width: 100%;
             margin: 0 auto;
             position: relative;
             min-height: 100vh;
@@ -234,7 +197,6 @@
             <p class="mb-6 text-lg font-bold text-gray-700">Sebelum masuk ke museum, buat tanda pengenalmu! Gunakan kamera untuk mengambil swafoto wajahmu yang akan menjadi kursor ajaib.</p>
             
             <div class="mb-6 flex flex-col items-center justify-center min-h-[160px]">
-                <!-- CAMERA CONTAINER -->
                 <div id="camera-container" class="hidden flex-col items-center w-full">
                     <video id="camera-stream" autoplay playsinline class="w-32 h-32 object-cover rounded-full border-4 border-red-500 shadow-inner mb-4" style="transform: scaleX(-1);"></video>
                     <div class="flex gap-2">
@@ -243,7 +205,6 @@
                     </div>
                 </div>
 
-                <!-- PREVIEW CONTAINER -->
                 <div id="preview-section" class="flex flex-col items-center w-full">
                     <div id="preview-container" class="w-32 h-32 rounded-full border-4 border-red-500 overflow-hidden mb-4 bg-gray-200 flex items-center justify-center shadow-inner">
                         <span class="text-4xl">🕵️</span>
@@ -272,67 +233,59 @@
     </section>
 
     <!-- SCREEN 3: MAIN MENU / LEVEL SELECT -->
-    <section id="screen-menu" class="hidden flex-1 flex flex-col wood-bg relative overflow-hidden py-12 px-4 md:px-12">
-        <div class="absolute bottom-0 left-0 text-9xl z-30 drop-shadow-2xl pointer-events-none transform -scale-x-100 hidden md:block">🕵️‍♂️</div>
-        <div class="absolute top-10 left-4 text-7xl z-10 drop-shadow-xl opacity-80 rotate-[-15deg] hidden md:block">🇮🇩</div>
-        <div class="absolute bottom-4 right-10 text-8xl z-30 drop-shadow-xl opacity-90 hidden md:block">📁</div>
-        <div class="absolute bottom-10 right-32 text-7xl z-30 drop-shadow-xl rotate-[20deg] hidden md:block">🔎</div>
+    <section id="screen-menu" class="hidden flex-1 flex-col relative overflow-hidden min-h-screen parchment-bg p-4 md:p-8">
+        
+        <!-- Garis putus-putus penghias latar -->
+        <svg class="dashed-path hidden md:block absolute inset-0 z-0" viewBox="0 0 1000 600" preserveAspectRatio="none">
+            <path d="M 100 200 C 300 100, 500 300, 800 200" fill="none" stroke="#d97706" stroke-width="3" stroke-dasharray="10, 10" opacity="0.2" />
+        </svg>
 
-        <!-- Main Map Container -->
-        <div class="max-w-6xl mx-auto w-full parchment-bg rounded-xl border-4 border-amber-700/50 p-6 md:p-10 relative flex-1 flex flex-col">
+        <!-- AREA HEADER (Panel Atas) -->
+        <div class="relative z-20 flex flex-wrap md:flex-nowrap justify-between items-start w-full max-w-6xl mx-auto gap-4">
             
-            <div class="ribbon-banner w-max max-w-[90%] text-center">
-                <div class="bg-red-600 text-white font-kids text-3xl md:text-5xl font-bold py-3 px-8 md:px-16 rounded-lg border-2 border-red-800 shadow-[0_6px_0_#7f1d1d]">
-                    Peta Museum Sejarah
-                </div>
-            </div>
-
-            <div class="text-center mt-12 mb-8 relative z-10">
-                <p class="text-amber-900 font-bold text-lg md:text-xl bg-amber-100/80 inline-block px-6 py-2 rounded-full shadow-sm border border-amber-300">
-                    Pilih ruangan untuk melanjutkan petualanganmu!
-                </p>
-            </div>
-
-            <!-- Sidebar Left & Right -->
-            <div class="absolute top-20 -left-6 z-40 hidden xl:block w-64 bg-[#fef3c7] border-4 border-amber-800 rounded-xl shadow-xl p-4 rotate-[-2deg]">
-                <h3 class="font-kids text-xl text-amber-900 font-bold border-b-2 border-amber-300 pb-2 mb-2">📝 Catatan Detektif</h3>
-                <p class="text-amber-800 text-sm font-bold mb-4">Kumpulkan semua petunjuk dan ungkap misteri perjalanan menuju kemerdekaan Indonesia!</p>
-                <button onclick="document.getElementById('modal-how-to-play').classList.remove('hidden'); playSound('click');" class="w-full bg-amber-700 hover:bg-amber-600 text-white py-2 rounded shadow-[0_3px_0_#451a03] font-bold text-sm transition-colors">📖 Lihat Catatan</button>
-            </div>
-
-            <div class="absolute top-20 -right-6 z-40 hidden xl:block w-64 bg-white border-4 border-blue-400 rounded-2xl shadow-xl p-4 rotate-[2deg]">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="text-4xl">🤖</div>
-                    <div>
-                        <h3 class="font-kids text-lg text-blue-900 font-bold">Bung Robot</h3>
-                        <p class="text-xs text-gray-600 leading-tight font-bold">Butuh petunjuk? Tanya aku!</p>
-                    </div>
-                </div>
-                <button onclick="document.getElementById('modal-how-to-play').classList.remove('hidden'); playSound('click');" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-full shadow-[0_3px_0_#1e3a8a] font-bold text-sm transition-colors">💬 Tanya Sekarang</button>
-            </div>
-
-            <div class="relative flex-1 z-10 w-full max-w-4xl mx-auto mt-4">
-                <svg class="dashed-path hidden md:block" viewBox="0 0 800 500" preserveAspectRatio="none">
-                    <path d="M 130 100 C 250 100, 350 150, 400 100 C 450 50, 550 100, 670 100 C 750 100, 750 200, 750 250 C 750 350, 650 350, 550 350 C 400 350, 300 300, 130 350" 
-                          fill="none" stroke="#78350f" stroke-width="4" stroke-dasharray="10, 10" opacity="0.4" />
-                </svg>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8" id="level-grid"></div>
-            </div>
-
-            <div class="mt-12 bg-white/80 border-4 border-yellow-400 rounded-2xl p-4 flex items-center justify-between gap-4 max-w-3xl mx-auto w-full shadow-lg z-20">
-                <div class="flex items-center gap-4">
-                    <div class="text-5xl drop-shadow-md animate-pulse">💡</div>
-                    <p class="text-amber-900 font-bold md:text-lg text-sm leading-tight">
-                        Selesaikan setiap ruangan untuk mendapatkan <span class="text-red-600">petunjuk, poin,</span> dan <span class="text-green-600">lencana spesial!</span>
-                    </p>
-                </div>
-                <button onclick="renderBadges('badge-container'); document.getElementById('modal-badges').classList.remove('hidden'); playSound('click');" class="whitespace-nowrap bg-yellow-500 hover:bg-yellow-400 text-yellow-900 font-bold py-3 px-6 rounded-xl shadow-[0_4px_0_#b45309] active:translate-y-[4px] active:shadow-none hidden md:block transition-all">
-                    🏆 Lihat Lencana
+            <!-- Kiri: Catatan Detektif -->
+            <div class="bg-[#fef3c7] border-4 border-[#d97706] rounded-xl p-4 w-full md:w-64 shadow-xl relative rotate-[-2deg]">
+                <div class="absolute -top-3 -right-3 text-3xl drop-shadow-md">📌</div>
+                <h3 class="font-kids text-lg text-amber-900 font-bold border-b-2 border-amber-300 pb-1 mb-2 flex items-center gap-2">
+                    📄 Catatan Detektif
+                </h3>
+                <p class="text-amber-800 text-xs font-bold mb-3 leading-tight">Kumpulkan semua petunjuk dan ungkap misteri perjalanan menuju kemerdekaan Indonesia!</p>
+                <button onclick="document.getElementById('modal-how-to-play').classList.remove('hidden'); playSound('click');" class="w-full bg-[#92400e] hover:bg-[#78350f] text-white py-2 rounded-lg shadow-[0_3px_0_#451a03] font-bold text-sm flex items-center justify-center gap-2 transition-transform active:translate-y-1">
+                    📖 Lihat Catatan
                 </button>
             </div>
-            
-            <button onclick="renderBadges('badge-container'); document.getElementById('modal-badges').classList.remove('hidden'); playSound('click');" class="mt-4 md:hidden w-full bg-yellow-500 text-yellow-900 font-bold py-3 rounded-xl shadow-[0_4px_0_#b45309] transition-all">
-                🏆 Lihat Lencana
+
+            <!-- Tengah: Banner Judul -->
+            <div class="bg-[#fef3c7] border-[3px] border-[#d97706] rounded-full px-8 py-3 shadow-md mt-4 md:mt-0 order-first md:order-none w-full md:w-auto text-center z-10 flex items-center justify-center">
+                <p class="text-[#92400e] font-bold text-lg md:text-xl">Pilih ruangan untuk melanjutkan petualanganmu!</p>
+            </div>
+
+            <!-- Kanan: Bung Robot -->
+            <div class="bg-[#fef3c7] border-4 border-[#d97706] rounded-xl p-4 w-full md:w-64 shadow-xl relative rotate-[2deg]">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="text-5xl drop-shadow-md">🤖</div>
+                    <div>
+                        <h3 class="font-kids text-lg text-amber-900 font-bold leading-tight">Bung Robot</h3>
+                        <p class="text-[11px] text-amber-800 font-bold leading-tight mt-1">Butuh petunjuk? Tanya aku!</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modal-how-to-play').classList.remove('hidden'); playSound('click');" class="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white py-2 rounded-lg shadow-[0_3px_0_#1e3a8a] font-bold text-sm flex items-center justify-center gap-2 transition-transform active:translate-y-1">
+                    💬 Tanya Sekarang
+                </button>
+            </div>
+        </div>
+
+        <!-- AREA GRID (Kartu Level) -->
+        <div class="relative z-10 w-full max-w-5xl mx-auto mt-8 md:mt-10 flex-1">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8" id="level-grid">
+                <!-- Kartu-kartu akan dimunculkan di sini oleh JavaScript -->
+            </div>
+        </div>
+
+        <!-- Tombol Tambahan Bawah -->
+        <div class="relative z-10 text-center mt-6">
+            <button onclick="renderBadges('badge-container'); document.getElementById('modal-badges').classList.remove('hidden'); playSound('click');" class="bg-yellow-500 text-yellow-900 font-bold py-3 px-8 rounded-xl shadow-[0_4px_0_#b45309] hover:scale-105 active:translate-y-1 active:shadow-none transition-all inline-flex items-center gap-2">
+                🏆 Lihat Koleksi Lencana
             </button>
         </div>
     </section>
@@ -642,7 +595,9 @@
 
     const levelsData = [
         {
-            id: 1, title: "Level 1: Ruang Perjuangan", desc: "Temukan petunjuk tentang perjuangan bangsa melawan penjajahan.", bg: "url('bg-level1.png') center/cover no-repeat",
+            id: 1, title: "Level 1: Ruang Perjuangan", desc: "Temukan petunjuk tentang perjuangan bangsa melawan penjajahan.", 
+            thumb: "thumb1.png",
+            bg: "url('bg-level1.png') center/cover no-repeat",
             objects: [
                 { id: 'l1o1', type: 'clue', icon: '🗺️', name: 'Peta Nusantara', text: 'Peta ini menunjukkan bahwa bangsa Eropa seperti Belanda, Portugis, dan Spanyol datang ke Nusantara awalnya untuk mencari rempah-rempah.', x: 20, y: 30 },
                 { id: 'l1o2', type: 'clue', icon: '🎍', name: 'Bambu Runcing', text: 'Senjata tradisional yang terbuat dari bambu. Walaupun sederhana, senjata ini adalah simbol keberanian rakyat Indonesia melawan senjata modern penjajah.', x: 70, y: 60 },
@@ -660,7 +615,9 @@
             ]
         },
         {
-            id: 2, title: "Level 2: Ruang Menjelang Proklamasi", desc: "Selidiki peristiwa penting pada bulan Agustus 1945.", bg: "radial-gradient(circle, #475569, #0f172a)",
+            id: 2, title: "Level 2: Ruang Menjelang Proklamasi", desc: "Selidiki peristiwa penting pada bulan Agustus 1945.", 
+            thumb: "thumb2.png",
+            bg: "radial-gradient(circle, #475569, #0f172a)",
             objects: [
                 { id: 'l2o1', type: 'clue', icon: '📻', name: 'Radio Tua', text: 'Dari radio ini, para pemuda Indonesia mendengar berita rahasia bahwa Jepang telah menyerah kepada Sekutu pada 14 Agustus 1945.', x: 30, y: 40 },
                 { id: 'l2o2', type: 'clue', icon: '💥', name: 'Foto Kota Hancur', text: 'Foto ini menunjukkan kota Hiroshima dan Nagasaki di Jepang yang dijatuhi bom atom oleh Sekutu pada tanggal 6 dan 9 Agustus 1945.', x: 60, y: 30 },
@@ -678,7 +635,9 @@
             ]
         },
         {
-            id: 3, title: "Level 3: Ruang Rengasdengklok", desc: "Apa yang sebenarnya terjadi di Rengasdengklok?", bg: "radial-gradient(circle, #064e3b, #022c22)",
+            id: 3, title: "Level 3: Ruang Rengasdengklok", desc: "Apa yang sebenarnya terjadi di Rengasdengklok?", 
+            thumb: "thumb3.png",
+            bg: "radial-gradient(circle, #064e3b, #022c22)",
             objects: [
                 { id: 'l3o1', type: 'clue', icon: '🗺️', name: 'Peta Jawa Barat', text: 'Menunjukkan lokasi Rengasdengklok, sebuah daerah di Karawang, Jawa Barat. Letaknya aman dan jauh dari pantauan tentara Jepang di Jakarta.', x: 25, y: 25 },
                 { id: 'l3o2', type: 'clue', icon: '🚗', name: 'Kunci Mobil', text: 'Pada tanggal 16 Agustus 1945 dini hari, golongan muda membawa Soekarno dan Hatta ke luar kota menggunakan kendaraan.', x: 70, y: 40 },
@@ -696,7 +655,9 @@
             ]
         },
         {
-            id: 4, title: "Level 4: Ruang Tokoh Proklamasi", desc: "Siapa saja tokoh di balik peristiwa bersejarah ini?", bg: "radial-gradient(circle, #312e81, #1e1b4b)",
+            id: 4, title: "Level 4: Ruang Tokoh Proklamasi", desc: "Siapa saja tokoh di balik peristiwa bersejarah ini?", 
+            thumb: "thumb4.png",
+            bg: "radial-gradient(circle, #312e81, #1e1b4b)",
             objects: [
                 { id: 'l4o1', type: 'clue', icon: '🎤', name: 'Mikrofon Soekarno', text: 'Ir. Soekarno adalah tokoh yang membacakan Teks Proklamasi Kemerdekaan Indonesia. Beliau juga dikenal sebagai Bapak Proklamator.', x: 20, y: 30 },
                 { id: 'l4o2', type: 'clue', icon: '👓', name: 'Kacamata Moh. Hatta', text: 'Drs. Moh. Hatta mendampingi Soekarno saat pembacaan Proklamasi dan ikut merumuskan teksnya.', x: 50, y: 20 },
@@ -714,7 +675,9 @@
             ]
         },
         {
-            id: 5, title: "Level 5: Ruang Penyusunan Teks", desc: "Bagaimana naskah Proklamasi dibuat pada malam hari?", bg: "radial-gradient(circle, #581c87, #2e1065)",
+            id: 5, title: "Level 5: Ruang Penyusunan Teks", desc: "Bagaimana naskah Proklamasi dibuat pada malam hari?", 
+            thumb: "thumb5.png",
+            bg: "radial-gradient(circle, #581c87, #2e1065)",
             objects: [
                 { id: 'l5o1', type: 'clue', icon: '🏠', name: 'Foto Rumah', text: 'Ini adalah rumah Laksamana Maeda (Perwira Jepang yang bersimpati pada Indonesia). Rumah ini sangat aman untuk merumuskan naskah Proklamasi.', x: 25, y: 25 },
                 { id: 'l5o2', type: 'clue', icon: '✍️', name: 'Kertas Coretan', text: 'Naskah Proklamasi awalnya ditulis tangan oleh Bung Karno. Disebut sebagai naskah "Klad".', x: 55, y: 40 },
@@ -732,7 +695,9 @@
             ]
         },
         {
-            id: 6, title: "Level 6: Pembacaan Proklamasi", desc: "Hari Kemerdekaan akhirnya tiba!", bg: "radial-gradient(circle, #b91c1c, #7f1d1d)",
+            id: 6, title: "Level 6: Pembacaan Proklamasi", desc: "Hari Kemerdekaan akhirnya tiba!", 
+            thumb: "thumb6.png",
+            bg: "radial-gradient(circle, #b91c1c, #7f1d1d)",
             objects: [
                 { id: 'l6o1', type: 'clue', icon: '📅', name: 'Kalender 17 Agustus', text: 'Hari Jumat, 17 Agustus 1945 bertepatan dengan bulan suci Ramadhan. Hari yang sangat bersejarah bagi bangsa Indonesia!', x: 20, y: 30 },
                 { id: 'l6o2', type: 'clue', icon: '📍', name: 'Plang Jalan', text: 'Jalan Pegangsaan Timur No. 56, Jakarta. Ini adalah kediaman Bung Karno sekaligus tempat dilaksanakannya pembacaan Proklamasi.', x: 50, y: 20 },
@@ -919,50 +884,53 @@
     function renderMenuGrid() {
         const grid = document.getElementById('level-grid');
         grid.innerHTML = '';
-        const roomEmojis = ['🏛️⚔️', '📻📅', '🚗🏠', '👤📝', '⌨️📜', '🇮🇩👥'];
         
         levelsData.forEach((lvl, index) => {
             const isUnlocked = lvl.id <= gameState.maxLevelUnlocked;
             const isCompleted = lvl.id < gameState.maxLevelUnlocked;
-            const isCurrent = lvl.id === gameState.maxLevelUnlocked;
+            
             const btn = document.createElement('div'); 
             
-            let borderStyle = '', bgStyle = '', opacityStyle = '', badgeIcon = '', cursorStyle = isUnlocked ? 'cursor-pointer hover:-translate-y-2' : 'cursor-not-allowed opacity-80';
-
-            if (isCompleted) {
-                borderStyle = 'border-green-500'; bgStyle = 'bg-white';
-                badgeIcon = '<div class="absolute -bottom-4 -right-4 w-12 h-12 bg-green-500 rounded-full border-4 border-white flex items-center justify-center text-white text-2xl shadow-md z-20">✔️</div>';
-            } else if (isCurrent) {
-                borderStyle = 'border-amber-500 ring-4 ring-yellow-300 ring-opacity-50'; bgStyle = 'bg-yellow-50';
-            } else {
-                borderStyle = 'border-gray-400'; bgStyle = 'bg-gray-100'; opacityStyle = 'grayscale';
-                badgeIcon = '<div class="absolute -bottom-4 -right-4 w-12 h-12 bg-gray-500 rounded-full border-4 border-white flex items-center justify-center text-white text-xl shadow-md z-20">🔒</div>';
+            // Pengaturan desain berdasarkan status
+            let cardBorder = isUnlocked ? 'border-[#fbbf24]' : 'border-gray-300';
+            let headerBg   = isUnlocked ? 'bg-[#fef3c7]' : 'bg-gray-200';
+            let circleBg   = isUnlocked ? 'bg-[#fbbf24] text-white' : 'bg-gray-400 text-white';
+            let textTitle  = isUnlocked ? 'text-gray-900' : 'text-gray-600';
+            let cursorStyle = isUnlocked ? 'cursor-pointer hover:-translate-y-2' : 'cursor-not-allowed opacity-90';
+            let imageFilter = isUnlocked ? '' : 'grayscale opacity-70';
+            
+            // Logika Ikon Gembok di Kanan Bawah
+            let badgeIcon = '';
+            if (!isUnlocked) {
+                badgeIcon = '<div class="absolute -bottom-3 -right-3 w-11 h-11 bg-gray-400 rounded-full border-4 border-white flex items-center justify-center text-white text-lg shadow-md z-20">🔒</div>';
             }
 
-            btn.className = `relative flex flex-col rounded-2xl border-4 ${borderStyle} ${bgStyle} ${cursorStyle} transition-all duration-300 shadow-lg`;
+            btn.className = `relative flex flex-col rounded-2xl border-[5px] ${cardBorder} bg-white ${cursorStyle} transition-all duration-300 shadow-xl`;
             if (isUnlocked) btn.onclick = () => loadLevel(lvl.id);
+            
             const shortTitle = lvl.title.split(': ')[1] || lvl.title;
-
-            // Thumbnail display
-            let thumbnailBg = '';
-            if (lvl.bg.includes('url')) {
-                thumbnailBg = lvl.bg; // If it's an image
-            } else {
-                thumbnailBg = `background: ${lvl.bg}`; // If it's a gradient
-            }
+            
+            // Mengambil gambar thumbnail, jika tidak ada, gunakan warna fallback
+            const bgImage = lvl.thumb ? `url('${lvl.thumb}')` : '#333';
 
             btn.innerHTML = `
-                <div class="flex items-center gap-3 p-3 border-b-2 border-gray-100 bg-white/50 rounded-t-xl relative z-10">
-                    <div class="w-8 h-8 rounded-full ${isCompleted ? 'bg-green-600' : (isUnlocked ? 'bg-amber-600' : 'bg-gray-500')} text-white flex items-center justify-center font-bold font-kids shadow-inner text-lg">${lvl.id}</div>
-                    <h4 class="font-kids text-lg font-bold leading-tight ${isUnlocked ? 'text-gray-800' : 'text-gray-500'} flex-1">${shortTitle}</h4>
+                <!-- Header Kartu -->
+                <div class="flex items-center gap-3 p-3 ${headerBg} rounded-t-xl">
+                    <div class="w-8 h-8 rounded-full ${circleBg} flex items-center justify-center font-bold shadow-sm text-base">
+                        ${lvl.id}
+                    </div>
+                    <h4 class="font-bold ${textTitle} text-[15px] leading-tight flex-1">${shortTitle}</h4>
                 </div>
-                <div class="h-28 w-full relative overflow-hidden border-y-2 border-gray-200 ${opacityStyle}">
-                    <div class="absolute inset-0 opacity-80" style="${thumbnailBg}"></div>
-                    <div class="absolute inset-0 flex items-center justify-center text-5xl drop-shadow-lg filter pb-2">${roomEmojis[index]}</div>
+                
+                <!-- Gambar Thumbnail -->
+                <div class="h-32 md:h-40 w-full relative overflow-hidden border-y-[3px] border-gray-200 ${imageFilter}" style="background: ${bgImage}; background-size: cover; background-position: center;">
                 </div>
-                <div class="p-4 flex-1 relative z-10">
-                    <p class="text-xs md:text-sm font-bold ${isUnlocked ? 'text-gray-700' : 'text-gray-400'}">${lvl.desc}</p>
+                
+                <!-- Deskripsi Kartu -->
+                <div class="p-4 flex-1 flex items-start bg-[#f8f9fa] rounded-b-xl">
+                    <p class="text-[13px] font-bold text-gray-700 leading-snug">${lvl.desc}</p>
                 </div>
+                
                 ${badgeIcon}
             `;
             grid.appendChild(btn);
